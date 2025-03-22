@@ -1,12 +1,20 @@
 const express = require('express');
 const app = express()
 
+app.use("/test", (req, res, next) => {
+    console.log("middleware")
+    next()
+}, (req, res) => {
+    console.log("middleware 2")
+    res.send("hello world")
+})
+
 app.get("/test", (req, res) => {
     res.send("hello world")
 })
 
-app.post("/test", (req, res) => {
-    console.log("test post request")
+app.post("/test/:id", (req, res) => {
+    console.log(req.params.id)
     res.send("test post request")
 })
 
