@@ -81,7 +81,17 @@ app.patch('/user/:id', async (req, res) => {
     try {
         const userId = req.params.id;
         const data = req.body;
-        await User.findByIdAndUpdate(userId, data);
+        const UPDATE_ALLOWED_FIELDS = ['skills', 'age', 'about', 'password']
+        const isValidUpdate = Object.keys(data).every((key) => {
+            return UPDATE_ALLOWED_FIELDS.includes(key);
+        });
+        if (!isValidUpdate) {
+            return res.status(400).json({ message: "Invalid update fields" });
+        }
+        await User.findByIdAndUpdate(userId, data, {
+            new: true,
+            runValidators: true // to ensure the updated data is validated against the schema
+        });
         const updatedUser = await User.findById(userId);
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
