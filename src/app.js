@@ -66,6 +66,32 @@ app.get('/user/:email', async (req, res) => {
 }
 )
 
+//delete user by id
+app.delete('/user/:id', async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+//update user by id
+app.patch('/user/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const data = req.body;
+        await User.findByIdAndUpdate(userId, data);
+        const updatedUser = await User.findById(userId);
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
 connectDB().then(() => {
     console.log("Connected to MongoDB");
     app.listen(3000, () => {
