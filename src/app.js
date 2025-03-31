@@ -1,25 +1,53 @@
 const express = require('express');
 const connectDB = require('./config/database')
 const User = require('./models/user')
+const { validateSignup } = require('./utils/validations')
+const bycrypt = require('bcrypt');
 
 const app = express()
 app.use(express.json());
 
 //User signup
 app.post('/signup', async (req, res) => {
-    const user = new User({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        password: req.body.password,
-        age: req.body.age,
-        gender: req.body.gender
-    })
     try {
+        // Validate the request body
+        validateSignup(req);
+
+        const { firstName, lastName, email, password } = req.body;
+
+        //Encrypt password
+        const saltRounds = 10;
+        const hashedPassword = await bycrypt.hash(password, saltRounds);
+
+        const user = new User({
+            firstName, lastName, email, password: hashedPassword,
+        });
         const savedUser = await user.save();
         res.status(201).json(savedUser);
     } catch (err) {
         res.status(400).json({ message: err.message });
+    }
+}
+)
+
+//user login
+app.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const isMatch = await bycrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+        res.status(200).json(user);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
 )
