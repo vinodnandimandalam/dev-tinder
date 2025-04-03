@@ -148,8 +148,6 @@ app.get('/profile', userAuth, async (req, res) => {
     }
 })
 
-//send connection request
-
 
 connectDB().then(() => {
     console.log("Connected to MongoDB");
