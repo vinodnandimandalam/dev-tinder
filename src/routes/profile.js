@@ -30,7 +30,7 @@ profileRouter.patch('/profile/edit', userAuth, async (req, res) => {
         );
 
         await loggedInUser.save();
-        res.status(200).json(loggedInUser);
+        res.status(200).json({data: loggedInUser});
 
     } catch (error) {
         res.status(500).json({ message: error.message });
